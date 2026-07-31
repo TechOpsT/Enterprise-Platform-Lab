@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata: { name: platform-api-alerts, namespace: monitoring }
+spec:
+  groups:
+    - name: platform-api
+      rules:
+        - alert: PlatformAPIHighErrorRate
+          expr: sum(rate(platform_api_requests_total{status=~"5.."}[5m])) / sum(rate(platform_api_requests_total[5m])) > 0.05
+          for: 10m
+          labels: { severity: warning }
+          annotations: { summary: "Platform API error rate is above 5%" }
+        - alert: PlatformAPIHighLatency
+          expr: histogram_quantile(0.95, sum(rate(platform_api_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+          for: 10m
+          labels: { severity: warning }
+          annotations: { summary: "Platform API p95 latency exceeds 500ms" }

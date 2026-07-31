@@ -1,0 +1,8 @@
+grafana:
+  adminPassword: local-development-only
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+alertmanager:
+  alertmanagerSpec:
+    useExistingSecret: false

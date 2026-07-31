@@ -1,0 +1,2 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #e8ecff; background: #101627; }
+main { max-width: 680px; margin: 12vh auto; padding: 2rem; } h1 { font-size: 3rem; margin: .3rem 0; } .eyebrow { letter-spacing: .12em; color: #86a5ff; font-size: .8rem; } section { padding: 1rem; background: #19233b; border-radius: .5rem; margin: 2rem 0; } span { display:inline-block; width:.75rem; height:.75rem; border-radius:50%; background:#f7b955; } span.healthy { background:#4ee39c; } span.unavailable { background:#ff647c; } li { margin:.7rem 0; color:#b8c3e1; }

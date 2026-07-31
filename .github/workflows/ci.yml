@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Test API
+        working-directory: apps/api
+        run: pip install -r requirements.txt && pytest
+      - uses: azure/setup-helm@v4
+      - name: Render and lint Helm chart
+        run: helm lint charts/platform-home-lab && helm template platform-home-lab charts/platform-home-lab > /dev/null
+      - name: Build API image
+        run: docker build -t platform-api:${{ github.sha }} apps/api
+      - name: Build frontend image
+        run: docker build -t platform-web:${{ github.sha }} apps/frontend
+
+  # Enable this job once ghcr image names and repository permissions are confirmed.
+  # publish:
+  #   needs: validate
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: docker/login-action@v3
+  #       with: { registry: ghcr.io, username: ${{ github.actor }}, password: ${{ secrets.GITHUB_TOKEN }} }
