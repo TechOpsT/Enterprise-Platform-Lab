@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-home-lab
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/TechOpsT/Enterprise-Platform-Lab.git
+    targetRevision: main
+    path: charts/platform-home-lab
+    helm:
+      releaseName: platform-home-lab
+      parameters:
+        - name: api.image.repository
+          value: platform-api
+        - name: api.image.tag
+          value: dev
+        - name: api.image.pullPolicy
+          value: Never
+        - name: frontend.image.repository
+          value: platform-web
+        - name: frontend.image.tag
+          value: dev
+        - name: frontend.image.pullPolicy
+          value: Never
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-lab
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
