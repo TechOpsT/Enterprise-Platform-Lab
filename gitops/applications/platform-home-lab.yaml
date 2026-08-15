@@ -19,7 +19,7 @@ spec:
         - name: api.image.tag
           value: 0051ca974e375a8085547e08abf41246104c35aa
         - name: api.image.pullPolicy
-          value: Never
+          value: IfNotPresent
         - name: frontend.image.repository
           value: ghcr.io/techopst/platform-web
         - name: frontend.image.tag
