@@ -1,13 +1,13 @@
 namespace: platform-lab
 api:
   replicaCount: 2
-  image: { repository: ghcr.io/replace-me/platform-api, tag: latest, pullPolicy: IfNotPresent }
+  image: { repository: ghcr.io/techopst/platform-api, tag: 0051ca974e375a8085547e08abf41246104c35aa, pullPolicy: IfNotPresent }
   resources:
     requests: { cpu: 100m, memory: 128Mi }
     limits: { cpu: 500m, memory: 256Mi }
 frontend:
   replicaCount: 2
-  image: { repository: ghcr.io/replace-me/platform-web, tag: latest, pullPolicy: IfNotPresent }
+  image: { repository: ghcr.io/techopst/platform-web, tag: 0051ca974e375a8085547e08abf41246104c35aa, pullPolicy: IfNotPresent }
   resources:
     requests: { cpu: 50m, memory: 64Mi }
     limits: { cpu: 250m, memory: 128Mi }
