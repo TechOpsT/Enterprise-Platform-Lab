@@ -23,9 +23,9 @@ spec:
         - name: frontend.image.repository
           value: platform-web
         - name: frontend.image.tag
-          value: dev
+          value: 0051ca974e375a8085547e08abf41246104c35aa
         - name: frontend.image.pullPolicy
-          value: Never
+          value: IfNotPresent
   destination:
     server: https://kubernetes.default.svc
     namespace: platform-lab
