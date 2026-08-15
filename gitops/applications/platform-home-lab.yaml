@@ -15,13 +15,13 @@ spec:
       releaseName: platform-home-lab
       parameters:
         - name: api.image.repository
-          value: platform-api
+          value: ghcr.io/techopst/platform-api
         - name: api.image.tag
-          value: dev
+          value: 0051ca974e375a8085547e08abf41246104c35aa
         - name: api.image.pullPolicy
           value: Never
         - name: frontend.image.repository
-          value: platform-web
+          value: ghcr.io/techopst/platform-web
         - name: frontend.image.tag
           value: 0051ca974e375a8085547e08abf41246104c35aa
         - name: frontend.image.pullPolicy
