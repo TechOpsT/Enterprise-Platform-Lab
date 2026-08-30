@@ -24,6 +24,50 @@ kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3000:80
 
 Sign into Grafana at `http://localhost:3000` as `admin` with the local-only password in `infra/observability/kube-prometheus-stack-values.yaml`. Never use this credential outside the lab.
 
+## Install centralized logging
+
+Install the pinned monolithic Loki release:
+
+```bash
+helm upgrade --install loki grafana-community/loki \
+  --version 18.11.7 \
+  --namespace logging \
+  --create-namespace \
+  --values observability/loki-values.yaml \
+  --wait \
+  --timeout 10m
+```
+
+Install Alloy to collect logs from the `platform-lab` namespace:
+
+```bash
+helm upgrade --install alloy grafana/alloy \
+  --version 1.12.1 \
+  --namespace logging \
+  --values observability/alloy-values.yaml \
+  --wait \
+  --timeout 10m
+```
+
+Apply the provisioned Loki data source to Grafana:
+
+```bash
+helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  --version 88.2.0 \
+  --namespace monitoring \
+  --reuse-values \
+  --values infra/observability/kube-prometheus-stack-values.yaml \
+  --wait \
+  --timeout 10m
+```
+
+Verify the logging components:
+
+```bash
+kubectl get pods,pvc,svc -n logging
+helm list -n logging
+```
+
 ## Validate the release
 
 ```bash

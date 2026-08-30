@@ -10,6 +10,7 @@ The chart keeps all components in the `platform-lab` namespace: React frontend, 
 | Default-deny network policy | makes allowed paths explicit | policy support requires a CNI that enforces it |
 | `restricted` pod-security namespace | demonstrates a safe workload baseline | test each third-party image for compatibility |
 | kube-prometheus-stack | includes Prometheus, Grafana, Alertmanager, node and cluster metrics | consumes significant local resources |
+| Grafana Alloy and Loki | collect, label, persist, and query Kubernetes workload logs | single-replica filesystem storage is appropriate only for this local lab |
 
 ## Data and traffic paths
 
@@ -17,7 +18,10 @@ The chart keeps all components in the `platform-lab` namespace: React frontend, 
 2. `/` goes to the frontend; `/api` goes to Flask.
 3. Flask is permitted to reach PostgreSQL and Redis by its network policy.
 4. Prometheus scrapes Flask metrics; Grafana queries Prometheus; Alertmanager receives rule evaluations.
+5. Alloy discovers pods in `platform-lab`, tails their container logs through the Kubernetes API, and forwards labeled streams to Loki. Grafana queries Loki through the in-cluster gateway.
 
 ## Production gaps to close deliberately
 
 TLS/cert-manager, a real container registry, external secrets, backup/restore, multi-node testing, persistent Redis, and image scanning are intentionally roadmap work—not claims this local baseline makes.
+
+Loki uses one monolithic replica, a local PVC, and seven-day retention. Production logging would require durable object storage, high availability, capacity planning, authentication, and tenant isolation.

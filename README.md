@@ -5,7 +5,7 @@ A production-inspired local Kubernetes platform for practicing the workflows of 
 ## What this demonstrates
 
 - **Kubernetes operations:** Helm releases, Deployments, StatefulSets, Services, PVCs, ingress, health probes, resource controls, and HPA.
-- **Observability:** Prometheus scraping of application metrics, Grafana dashboards, Alertmanager rules, and a clear path to Loki.
+- **Observability:** Prometheus application metrics, Grafana dashboards, Alertmanager rules, and centralized Kubernetes logging with Grafana Alloy and Loki.
 - **Security:** dedicated namespace and service account, non-root containers, least-privilege RBAC, and default-deny network policies.
 - **Reliability:** availability and latency SLOs, error-budget policy, failure-injection exercises, and incident runbooks.
 - **Delivery:** GitHub Actions validates the API, builds images, renders Helm, and can deploy to a local Kind cluster.
@@ -24,6 +24,10 @@ flowchart TB
   prom["Prometheus"] --> api
   prom --> alert["Alertmanager"]
   graf["Grafana"] --> prom
+  web --> alloy["Grafana Alloy"]
+  api --> alloy
+  alloy --> loki[("Loki")]
+  graf --> loki
 ```
 
 ## Quick start
@@ -48,11 +52,12 @@ Add `127.0.0.1 platform.local` to your hosts file, then open `http://platform.lo
 | `charts/platform-home-lab` | One reusable Helm chart for the complete workload |
 | `infra/kind` | Reproducible Kind cluster configuration |
 | `infra/observability` | Prometheus/Grafana/Alertmanager configuration |
+| `observability` | Pinned Loki and Grafana Alloy Helm configuration |
 | `docs` | Architecture, SLOs, runbooks, roadmap, operating guides |
 
 ## Delivery roadmap
 
-The implemented baseline covers Milestones 1–7. The next GitHub-ready increments are captured in [docs/roadmap.md](docs/roadmap.md): Argo CD (GitOps), Loki (logs), and controlled reliability exercises.
+The implemented baseline includes automated CI/CD, Argo CD GitOps, metrics, alerting, autoscaling, and centralized logging. Future increments are tracked in [docs/roadmap.md](docs/roadmap.md).
 
 ## Safety notes
 

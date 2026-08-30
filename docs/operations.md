@@ -27,3 +27,52 @@ In another shell: `kubectl get hpa api -n platform-lab --watch`. If CPU does not
 - Pod restarts: `sum(kube_pod_container_status_restarts_total{namespace="platform-lab"}) by (pod)`
 
 Apply the alert rules and ServiceMonitor after the monitoring stack is ready: `kubectl apply -f infra/observability/alerts.yaml && kubectl apply -f infra/observability/platform-api-service-monitor.yaml`.
+
+## Centralized logging
+
+The logging path is:
+
+```text
+platform-lab container stdout/stderr -> Grafana Alloy -> Loki -> Grafana Explore
+```
+
+Verify that Alloy and Loki are healthy:
+
+```bash
+kubectl get pods -n logging
+kubectl logs deployment/alloy -n logging --tail=50
+```
+
+Useful LogQL queries:
+
+```logql
+{namespace="platform-lab"}
+```
+
+```logql
+{namespace="platform-lab", container="frontend"} != "kube-probe"
+```
+
+```logql
+{namespace="platform-lab", container="api"}
+```
+
+Generate identifiable frontend traffic:
+
+```bash
+curl -A "platform-lab-test" http://platform.local
+```
+
+Find it in Grafana:
+
+```logql
+{namespace="platform-lab", container="frontend"} |= "platform-lab-test"
+```
+
+If a query is empty, compare it with the container's direct output:
+
+```bash
+kubectl logs deployment/api -n platform-lab --all-pods=true --prefix --tail=100
+```
+
+If both Kubernetes and Loki return no entries, the application emitted no logs. If Kubernetes returns entries but Loki does not, inspect Alloy discovery, permissions, and write errors.
