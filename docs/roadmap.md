@@ -49,8 +49,19 @@
 - [ ] Add Trivy image scanning to CI with an explicit severity policy.
 - [ ] Generate SBOM artifacts for the API and frontend images.
 - [ ] Replace the plaintext development database password with an External Secrets, Sealed Secrets, or equivalent lab pattern.
-- [ ] Add Kyverno or Gatekeeper policies for non-root execution, resource limits, and approved image registries.
-- [ ] Capture evidence of a noncompliant workload being rejected.
+- [ ] Install Kyverno as a version-pinned, platform-owned capability managed through GitOps.
+- [ ] Add Kyverno policies for non-root execution, resource requests and limits, approved image registries, immutable image references, and required workload metadata.
+- [ ] Introduce new policies in audit mode, document exception ownership, and promote agreed controls to enforcement after existing workloads comply.
+- [ ] Report policy results in CI and capture evidence of both a compliant deployment and a noncompliant workload being rejected.
+
+### Backup and disaster recovery
+
+- [ ] Define recovery-point and recovery-time objectives, retention, encryption, and restore ownership for platform and application data.
+- [ ] Install Velero as a version-pinned, platform-owned capability managed through GitOps, using a documented backup target and credential-management pattern.
+- [ ] Create scheduled backups for Kubernetes resources and eligible persistent volumes, with explicit namespace and resource inclusion/exclusion rules.
+- [ ] Add database-native PostgreSQL backups; Velero volume protection must not be the only database recovery mechanism.
+- [ ] Perform and document a restore into an isolated namespace or rebuilt cluster, validate application and data integrity, and record achieved RPO/RTO.
+- [ ] Add backup freshness and failure checks to platform operations and alerting.
 
 ### Reproducibility and lifecycle operations
 
@@ -69,4 +80,4 @@
 
 ## Definition of done
 
-The lab is portfolio-ready when another engineer can bootstrap it from the repository, deploy a change through CI/CD and Argo CD, inspect metrics and logs, observe an alert, demonstrate scaling and self-healing, complete one controlled recovery exercise, and tear the environment down using only documented procedures.
+The lab is portfolio-ready when another engineer can bootstrap it from the repository, deploy a change through CI/CD and Argo CD, inspect metrics and logs, observe an alert, demonstrate scaling and self-healing, verify Kyverno admission enforcement, restore a Velero backup with validated application data, complete one controlled recovery exercise, and tear the environment down using only documented procedures.
