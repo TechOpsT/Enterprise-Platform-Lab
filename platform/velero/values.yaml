@@ -1,0 +1,50 @@
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: velero
+      default: true
+      config:
+        region: minio
+        s3ForcePathStyle: true
+        s3Url: http://minio.backup-system.svc.cluster.local:9000
+  volumeSnapshotLocation: []
+
+credentials:
+  useSecret: true
+  existingSecret: velero-object-store-credentials
+
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.14.2
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+deployNodeAgent: true
+defaultVolumesToFsBackup: true
+snapshotsEnabled: false
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    autodetect: true
+    enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeAgent:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

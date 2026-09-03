@@ -25,10 +25,18 @@ postgres:
   storage: 1Gi
   database: platform
   username: platform
-  password: local-development-only
+  existingSecret: postgres-credentials
+  createDevelopmentSecret: false
+  password: ""
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
 
 redis:
   image: redis:7-alpine
+  resources:
+    requests: { cpu: 25m, memory: 64Mi }
+    limits: { cpu: 200m, memory: 192Mi }
 
 ingress:
   host: platform.local

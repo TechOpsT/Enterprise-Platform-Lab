@@ -4,3 +4,6 @@ metadata:
   name: {{ .Values.namespace }}
   labels:
     pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    platform.techopst.dev/policy-tier: restricted

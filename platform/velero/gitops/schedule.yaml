@@ -1,0 +1,14 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: platform-daily
+  namespace: velero
+spec:
+  schedule: "0 3 * * *"
+  template:
+    includedNamespaces: [platform-lab, transformation-explorer]
+    excludedResources: [events, events.events.k8s.io]
+    defaultVolumesToFsBackup: true
+    snapshotVolumes: false
+    storageLocation: default
+    ttl: 168h0m0s

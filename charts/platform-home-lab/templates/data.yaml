@@ -13,9 +13,10 @@ spec:
         - name: postgres
           image: {{ .Values.postgres.image }}
           ports: [{ containerPort: 5432 }]
-          envFrom: [{ secretRef: { name: postgres-credentials } }]
+          envFrom: [{ secretRef: { name: {{ .Values.postgres.existingSecret }} } }]
           volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
-          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+          resources: {{- toYaml .Values.postgres.resources | nindent 12 }}
+          securityContext: { runAsNonRoot: true, allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
   volumeClaimTemplates:
     - metadata: { name: data }
       spec: { accessModes: ["ReadWriteOnce"], resources: { requests: { storage: {{ .Values.postgres.storage }} } } }
@@ -38,6 +39,7 @@ spec:
         - name: redis
           image: {{ .Values.redis.image }}
           ports: [{ containerPort: 6379 }]
+          resources: {{- toYaml .Values.redis.resources | nindent 12 }}
           securityContext: { runAsNonRoot: true, runAsUser: 999, allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
 ---
 apiVersion: v1

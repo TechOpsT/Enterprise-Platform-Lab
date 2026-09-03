@@ -26,6 +26,41 @@ jobs:
         run: docker build -t platform-api:${{ github.sha }} apps/api
       - name: Build frontend image
         run: docker build -t platform-web:${{ github.sha }} apps/frontend
+      - name: Scan API image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: platform-api:${{ github.sha }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Scan frontend image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: platform-web:${{ github.sha }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Generate API SBOM
+        uses: anchore/sbom-action@v0.20.6
+        with:
+          image: platform-api:${{ github.sha }}
+          artifact-name: platform-api-${{ github.sha }}.spdx.json
+          format: spdx-json
+      - name: Generate frontend SBOM
+        uses: anchore/sbom-action@v0.20.6
+        with:
+          image: platform-web:${{ github.sha }}
+          artifact-name: platform-web-${{ github.sha }}.spdx.json
+          format: spdx-json
+      - name: Scan Kubernetes configuration
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: config
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '1'
 
   # Enable this job once ghcr image names and repository permissions are confirmed.
   # publish:

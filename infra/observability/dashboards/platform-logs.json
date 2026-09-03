@@ -1,0 +1,34 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "dedupStrategy": "none", "enableLogDetails": true, "showLabels": false, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true },
+      "targets": [
+        { "expr": "{namespace=~\"$namespace\", app=~\"$app\", container=~\"$container\", pod=~\"$pod\"} | json | level=~\"$level\"", "queryType": "range", "refId": "A" }
+      ],
+      "title": "Application logs",
+      "type": "logs"
+    }
+  ],
+  "schemaVersion": 40,
+  "tags": ["platform", "logs"],
+  "templating": {
+    "list": [
+      { "current": { "text": "platform-lab", "value": "platform-lab" }, "datasource": { "type": "loki", "uid": "loki" }, "definition": "label_values(namespace)", "includeAll": true, "label": "Namespace", "name": "namespace", "query": "label_values(namespace)", "refresh": 1, "type": "query" },
+      { "datasource": { "type": "loki", "uid": "loki" }, "definition": "label_values({namespace=~\"$namespace\"}, app)", "includeAll": true, "label": "Application", "name": "app", "query": "label_values({namespace=~\"$namespace\"}, app)", "refresh": 1, "type": "query" },
+      { "datasource": { "type": "loki", "uid": "loki" }, "definition": "label_values({namespace=~\"$namespace\"}, container)", "includeAll": true, "label": "Container", "name": "container", "query": "label_values({namespace=~\"$namespace\"}, container)", "refresh": 1, "type": "query" },
+      { "datasource": { "type": "loki", "uid": "loki" }, "definition": "label_values({namespace=~\"$namespace\"}, pod)", "includeAll": true, "label": "Pod", "name": "pod", "query": "label_values({namespace=~\"$namespace\"}, pod)", "refresh": 1, "type": "query" },
+      { "current": { "text": "All", "value": ".*" }, "includeAll": true, "label": "Level", "name": "level", "options": [], "query": "debug,info,warning,error,critical", "type": "custom" }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "Platform Application Logs",
+  "uid": "platform-application-logs",
+  "version": 1
+}

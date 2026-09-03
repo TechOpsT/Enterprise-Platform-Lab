@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: transformation-explorer
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/TechOpsT/digital-transformation-impact-explorer.git
+    targetRevision: main
+    path: charts/transformation-explorer
+    helm:
+      releaseName: transformation-explorer
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: transformation-explorer
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: postgres
+      jsonPointers:
+        - /spec/volumeClaimTemplates
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: restricted
+        pod-security.kubernetes.io/audit: restricted
+        pod-security.kubernetes.io/warn: restricted
+        platform.techopst.dev/policy-tier: restricted
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

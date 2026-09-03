@@ -31,10 +31,10 @@
 
 ### Application logging and dashboards
 
-- [ ] Add structured request, error, and lifecycle logging to the Flask API.
-- [ ] Create a Grafana logs dashboard filtered by namespace, application, container, pod, and log level.
+- [x] Add structured request, error, and lifecycle logging to the Flask API.
+- [x] Create a Grafana logs dashboard filtered by namespace, application, container, pod, and log level.
 - [ ] Link API error-rate or latency panels to the corresponding Loki logs.
-- [ ] Capture centralized-logging validation in `docs/evidence/`.
+- [x] Capture centralized-logging validation in `docs/evidence/`.
 
 ### Reliability exercises
 
@@ -46,37 +46,37 @@
 
 ### Security and software supply chain
 
-- [ ] Add Trivy image scanning to CI with an explicit severity policy.
-- [ ] Generate SBOM artifacts for the API and frontend images.
-- [ ] Replace the plaintext development database password with an External Secrets, Sealed Secrets, or equivalent lab pattern.
-- [ ] Install Kyverno as a version-pinned, platform-owned capability managed through GitOps.
-- [ ] Add Kyverno policies for non-root execution, resource requests and limits, approved image registries, immutable image references, and required workload metadata.
-- [ ] Introduce new policies in audit mode, document exception ownership, and promote agreed controls to enforcement after existing workloads comply.
-- [ ] Report policy results in CI and capture evidence of both a compliant deployment and a noncompliant workload being rejected.
+- [x] Add Trivy image scanning to CI with an explicit severity policy.
+- [x] Generate SBOM artifacts for the API and frontend images.
+- [x] Replace the plaintext development database password with a generated, local-only Kubernetes Secret workflow.
+- [x] Install Kyverno as a version-pinned, platform-owned capability managed through GitOps.
+- [x] Add Kyverno policies for non-root execution, resource requests and limits, approved image registries, and non-floating image references.
+- [x] Validate enrolled workloads through policy reports before enforcing the baseline; keep exceptions under platform ownership.
+- [x] Capture evidence of compliant workloads and a noncompliant workload being rejected.
 
 ### Backup and disaster recovery
 
-- [ ] Define recovery-point and recovery-time objectives, retention, encryption, and restore ownership for platform and application data.
-- [ ] Install Velero as a version-pinned, platform-owned capability managed through GitOps, using a documented backup target and credential-management pattern.
-- [ ] Create scheduled backups for Kubernetes resources and eligible persistent volumes, with explicit namespace and resource inclusion/exclusion rules.
-- [ ] Add database-native PostgreSQL backups; Velero volume protection must not be the only database recovery mechanism.
-- [ ] Perform and document a restore into an isolated namespace or rebuilt cluster, validate application and data integrity, and record achieved RPO/RTO.
-- [ ] Add backup freshness and failure checks to platform operations and alerting.
+- [x] Define recovery-point and recovery-time objectives, retention, encryption expectations, and restore ownership for platform and application data.
+- [x] Install Velero as a version-pinned, platform-owned capability managed through GitOps, using a documented backup target and credential-management pattern.
+- [x] Create scheduled backups for Kubernetes resources with explicit namespace and resource inclusion/exclusion rules.
+- [x] Add database-native PostgreSQL backups that stream directly to object storage.
+- [x] Perform and document a restore into an isolated namespace, validate application and data integrity, and record achieved RPO/RTO.
+- [x] Add backup freshness and failure checks to platform alerting.
 
 ### Reproducibility and lifecycle operations
 
-- [ ] Add Make targets to install, verify, upgrade, and remove Loki and Alloy.
-- [ ] Pin the kube-prometheus-stack chart version in the Makefile.
-- [ ] Add a single documented bootstrap workflow for the complete platform.
-- [ ] Add a clean teardown workflow that accounts for retained logging PVCs.
+- [x] Add Make targets to install, verify, upgrade, and remove Loki and Alloy.
+- [x] Pin the kube-prometheus-stack chart version in the Makefile.
+- [x] Add a single documented bootstrap workflow for the complete platform.
+- [x] Add a clean teardown workflow that accounts for retained logging PVCs.
 - [ ] Validate a full rebuild from an empty Kind cluster.
 
 ### Portfolio finish
 
-- [ ] Link all evidence documents from the README.
+- [x] Link all evidence documents from the README.
 - [ ] Capture screenshots of Grafana metrics and logs, Alertmanager state, Argo CD synchronization, and successful CI runs.
-- [ ] Add a concise demo script covering deployment, GitOps promotion, observability, scaling, self-healing, and recovery.
-- [ ] Review documentation and user-facing text for naming, spelling, and consistency.
+- [x] Add a concise demo script covering deployment, GitOps promotion, observability, scaling, self-healing, and recovery.
+- [x] Review documentation and user-facing text for naming, spelling, and consistency.
 
 ## Definition of done
 

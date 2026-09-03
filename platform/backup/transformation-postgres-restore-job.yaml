@@ -1,0 +1,112 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-logical-restore
+  namespace: transformation-explorer-restore
+  labels:
+    app.kubernetes.io/name: transformation-explorer
+    app.kubernetes.io/component: database-backup
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: transformation-explorer
+        app.kubernetes.io/component: database-backup
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: download
+          image: quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z
+          command: [/bin/sh, -c]
+          args:
+            - mc alias set local http://minio.backup-system.svc.cluster.local:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"; mc cp local/postgres-backups/transformation/latest.dump /work/transformation.dump
+          envFrom:
+            - secretRef:
+                name: backup-object-store-credentials
+          env:
+            - { name: MC_CONFIG_DIR, value: /tmp/.mc }
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { cpu: 100m, memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: work, mountPath: /work }
+      containers:
+        - name: pg-restore
+          image: docker.io/library/postgres:17.6-alpine
+          command: [/bin/sh, -c]
+          args:
+            - pg_restore --host=postgres --username=postgres --dbname=transformation --clean --if-exists /work/transformation.dump
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: transformation-explorer-database
+                  key: POSTGRES_SUPERUSER_PASSWORD
+          resources:
+            requests: { cpu: 25m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: work, mountPath: /work, readOnly: true }
+      volumes:
+        - name: work
+          emptyDir: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-restore-traffic
+  namespace: transformation-explorer-restore
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: database-backup
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: postgres
+      ports:
+        - { protocol: TCP, port: 5432 }
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: backup-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: minio
+      ports:
+        - { protocol: TCP, port: 9000 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-database-restore
+  namespace: transformation-explorer-restore
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: postgres
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: database-backup
+      ports:
+        - { protocol: TCP, port: 5432 }

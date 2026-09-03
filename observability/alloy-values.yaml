@@ -9,7 +9,7 @@ alloy:
         role = "pod"
 
         namespaces {
-          names = ["platform-lab"]
+          names = ["platform-lab", "transformation-explorer"]
         }
       }
 

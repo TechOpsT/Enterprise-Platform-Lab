@@ -6,8 +6,8 @@ A production-inspired local Kubernetes platform for practicing the workflows of 
 
 - **Kubernetes operations:** Helm releases, Deployments, StatefulSets, Services, PVCs, ingress, health probes, resource controls, and HPA.
 - **Observability:** Prometheus application metrics, Grafana dashboards, Alertmanager rules, and centralized Kubernetes logging with Grafana Alloy and Loki.
-- **Security:** dedicated namespace and service account, non-root containers, least-privilege RBAC, and default-deny network policies.
-- **Reliability:** availability and latency SLOs, error-budget policy, failure-injection exercises, and incident runbooks.
+- **Security:** dedicated namespaces and service accounts, non-root containers, least-privilege RBAC, default-deny network policies, image scanning, SBOMs, and Kyverno admission policy.
+- **Reliability:** availability and latency SLOs, error-budget policy, failure-injection exercises, incident runbooks, and Velero-backed recovery practice.
 - **Delivery:** GitHub Actions validates the API, builds images, renders Helm, and can deploy to a local Kind cluster.
 
 ## Architecture
@@ -36,9 +36,11 @@ Prerequisites: Docker, [Kind](https://kind.sigs.k8s.io/), `kubectl`, and Helm 3.
 
 ```bash
 make cluster
-make ingress
-make deploy
-make observability
+export POSTGRES_PASSWORD='<strong local password>'
+export BACKUP_ACCESS_KEY='<local MinIO access key>'
+export BACKUP_SECRET_KEY='<strong local MinIO secret key>'
+make bootstrap
+make verify
 ```
 
 Add `127.0.0.1 platform.local` to your hosts file, then open `http://platform.local`. See [docs/getting-started.md](docs/getting-started.md) for complete instructions and [docs/operations.md](docs/operations.md) for validation and troubleshooting.
@@ -54,6 +56,15 @@ Add `127.0.0.1 platform.local` to your hosts file, then open `http://platform.lo
 | `infra/observability` | Prometheus/Grafana/Alertmanager configuration |
 | `observability` | Pinned Loki and Grafana Alloy Helm configuration |
 | `docs` | Architecture, SLOs, runbooks, roadmap, operating guides |
+
+## Validation evidence
+
+- [GitHub Container Registry and Argo CD release](docs/evidence/ghcr-argo-release-validation.md)
+- [Argo CD self-healing](docs/evidence/argocd-self-healing-test.md)
+- [Horizontal Pod Autoscaler](docs/evidence/hpa-scaling-test.md)
+- [Kyverno policy, Velero backup, and recovery](docs/evidence/policy-backup-recovery-validation.md)
+
+For a concise end-to-end presentation, use the [demo walkthrough](docs/demo.md).
 
 ## Delivery roadmap
 

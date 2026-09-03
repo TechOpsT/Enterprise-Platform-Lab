@@ -1,0 +1,16 @@
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: platform-recovery-drill-final-restore-20260903
+  namespace: velero
+spec:
+  backupName: platform-recovery-drill-final-20260903
+  namespaceMapping:
+    transformation-explorer: transformation-explorer-restore
+  excludedResources:
+    - ingresses.networking.k8s.io
+    - jobs.batch
+    - cronjobs.batch
+    - events
+    - events.events.k8s.io
+  restorePVs: true

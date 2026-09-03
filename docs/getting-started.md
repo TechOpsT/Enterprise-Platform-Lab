@@ -1,32 +1,41 @@
 # Getting started
 
-## Create the local cluster
+## Bootstrap the complete platform
 
-From the repository root, run:
+The complete bootstrap needs three local-only credentials. Export them in your shell; they are used to create Kubernetes Secrets and are never written to the repository.
 
 ```bash
-make cluster
-make ingress
-make load-api load-web
-make deploy
+export POSTGRES_PASSWORD='<strong local password>'
+export BACKUP_ACCESS_KEY='<local MinIO access key>'
+export BACKUP_SECRET_KEY='<strong local MinIO secret key>'
+make bootstrap
+make verify
 ```
 
-The Kind configuration maps ports 80 and 443 from the control-plane container to your host. Add `127.0.0.1 platform.local` to the hosts file, wait for `make status` to show ready pods, then browse to `http://platform.local`.
+This creates the Kind cluster, installs ingress, monitoring, logging, Kyverno, MinIO, Velero, and Argo CD, deploys the platform workload, and registers both GitOps applications. The Kind configuration maps ports 80 and 443 from the control-plane container to your host. Add `127.0.0.1 platform.local transformation.local` to the hosts file, wait for `make status` to show ready pods, then browse to `http://platform.local` and `http://transformation.local`.
 
-## Install observability
+The Impact Explorer still needs its database Secret before Argo CD can complete the first sync. Create it from local shell values using the key names documented in that application's Kubernetes runbook.
+
+## Install individual capabilities
+
+If you already have a cluster, each capability can also be installed or upgraded independently:
 
 ```bash
+make repositories
 make observability
-kubectl apply -f infra/observability/alerts.yaml
-kubectl apply -f infra/observability/platform-api-service-monitor.yaml
+make logging
+make kyverno
+make velero
+make argocd
+make applications
 kubectl -n monitoring port-forward svc/kube-prometheus-stack-grafana 3000:80
 ```
 
 Sign into Grafana at `http://localhost:3000` as `admin` with the local-only password in `infra/observability/kube-prometheus-stack-values.yaml`. Never use this credential outside the lab.
 
-## Install centralized logging
+## Centralized logging details
 
-Install the pinned monolithic Loki release:
+`make logging` installs the pinned Loki and Alloy charts. The equivalent commands are:
 
 ```bash
 helm upgrade --install loki grafana-community/loki \
@@ -38,7 +47,7 @@ helm upgrade --install loki grafana-community/loki \
   --timeout 10m
 ```
 
-Install Alloy to collect logs from the `platform-lab` namespace:
+Install Alloy to collect logs from both application namespaces:
 
 ```bash
 helm upgrade --install alloy grafana/alloy \
@@ -78,4 +87,4 @@ curl -H 'Host: platform.local' http://localhost/api/api/v1/status
 
 ## Cleanup
 
-`make undeploy` removes the Helm release. `make delete-cluster` removes the entire Kind cluster and its local data.
+`make undeploy` removes only the platform workload. The component-specific `*-remove` targets remove logging, monitoring, Kyverno, or Velero. `make teardown` is intentionally informational; run `make delete-cluster` only when you mean to remove the entire Kind cluster and all of its local data.

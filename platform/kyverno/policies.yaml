@@ -1,0 +1,104 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-workload-baseline
+  annotations:
+    policies.kyverno.io/title: Platform workload baseline
+    policies.kyverno.io/category: Platform Security
+    policies.kyverno.io/description: >-
+      Enforces the minimum workload controls for namespaces enrolled in the
+      Enterprise Platform Lab policy baseline.
+spec:
+  admission: true
+  background: true
+  validationFailureAction: Enforce
+  rules:
+    - name: require-resource-requests-and-limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.techopst.dev/policy-tier: restricted
+      validate:
+        message: Every container needs CPU and memory requests and limits.
+        foreach:
+          - list: request.object.spec.containers
+            pattern:
+              resources:
+                requests:
+                  cpu: "?*"
+                  memory: "?*"
+                limits:
+                  cpu: "?*"
+                  memory: "?*"
+    - name: require-restricted-container-security
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.techopst.dev/policy-tier: restricted
+      validate:
+        message: Containers must run without privilege escalation and drop all capabilities.
+        foreach:
+          - list: request.object.spec.containers
+            pattern:
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+    - name: require-pod-security-context
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.techopst.dev/policy-tier: restricted
+      validate:
+        message: Pods must run as non-root with the RuntimeDefault seccomp profile.
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault
+    - name: restrict-image-registries
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.techopst.dev/policy-tier: restricted
+      validate:
+        message: Images must come from GHCR, the Docker official library, or registry.k8s.io.
+        foreach:
+          - list: request.object.spec.containers
+            anyPattern:
+              - image: "ghcr.io/*"
+              - image: "docker.io/library/*"
+              - image: "registry.k8s.io/*"
+              - image: "quay.io/minio/*"
+              - image: "platform-*:*"
+              - image: "transformation-explorer-*:*"
+              - image: "postgres:*"
+              - image: "redis:*"
+    - name: disallow-floating-tags
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.techopst.dev/policy-tier: restricted
+      validate:
+        message: Images must use an explicit non-latest tag or digest.
+        foreach:
+          - list: request.object.spec.containers
+            pattern:
+              image: "!*:latest"

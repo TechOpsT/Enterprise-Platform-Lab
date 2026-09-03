@@ -18,6 +18,7 @@ kind: RoleBinding
 metadata: { name: platform-api-read-config, namespace: {{ .Values.namespace }} }
 subjects: [{ kind: ServiceAccount, name: platform-api, namespace: {{ .Values.namespace }} }]
 roleRef: { apiGroup: rbac.authorization.k8s.io, kind: Role, name: platform-api-read-config }
+{{- if and .Values.data.enabled .Values.postgres.createDevelopmentSecret }}
 ---
 apiVersion: v1
 kind: Secret
@@ -27,3 +28,4 @@ stringData:
   POSTGRES_DB: {{ .Values.postgres.database | quote }}
   POSTGRES_USER: {{ .Values.postgres.username | quote }}
   POSTGRES_PASSWORD: {{ .Values.postgres.password | quote }}
+{{- end }}

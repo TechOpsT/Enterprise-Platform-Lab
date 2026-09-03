@@ -1,0 +1,15 @@
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: platform-recovery-drill-final-20260903
+  namespace: velero
+spec:
+  includedNamespaces:
+    - transformation-explorer
+  excludedResources:
+    - events
+    - events.events.k8s.io
+  defaultVolumesToFsBackup: true
+  snapshotVolumes: false
+  storageLocation: default
+  ttl: 24h0m0s

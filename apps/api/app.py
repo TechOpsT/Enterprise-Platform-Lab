@@ -1,7 +1,10 @@
 import os
 import time
+import json
+import logging
+import uuid
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, g, request
 from prometheus_client import Counter, Histogram, make_wsgi_app
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
@@ -14,8 +17,35 @@ LATENCY = Histogram(
 )
 
 
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        payload = {
+            "timestamp": int(time.time()),
+            "level": record.levelname.lower(),
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        for field in ("event", "method", "path", "status", "duration_ms", "request_id"):
+            value = getattr(record, field, None)
+            if value is not None:
+                payload[field] = value
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        return json.dumps(payload, separators=(",", ":"))
+
+
+def configure_logging(app):
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter())
+    app.logger.handlers = [handler]
+    app.logger.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
+    app.logger.propagate = False
+
+
 def create_app():
     app = Flask(__name__)
+    configure_logging(app)
+    app.logger.info("api started", extra={"event": "application.start"})
 
     @app.get("/")
     def index():
@@ -36,16 +66,36 @@ def create_app():
 
     @app.before_request
     def start_timer():
-        from flask import g
         g.start_time = time.perf_counter()
+        g.request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
 
     @app.after_request
     def record_metrics(response):
-        from flask import g, request
         endpoint = request.url_rule.rule if request.url_rule else "unmatched"
+        duration = time.perf_counter() - g.start_time
         REQUESTS.labels(request.method, endpoint, str(response.status_code)).inc()
-        LATENCY.labels(endpoint).observe(time.perf_counter() - g.start_time)
+        LATENCY.labels(endpoint).observe(duration)
+        response.headers["X-Request-ID"] = g.request_id
+        app.logger.info(
+            "request completed",
+            extra={
+                "event": "http.request",
+                "method": request.method,
+                "path": endpoint,
+                "status": response.status_code,
+                "duration_ms": round(duration * 1000, 2),
+                "request_id": g.request_id,
+            },
+        )
         return response
+
+    @app.errorhandler(Exception)
+    def handle_unexpected_error(error):
+        app.logger.exception(
+            "unhandled request error",
+            extra={"event": "http.error", "request_id": getattr(g, "request_id", None)},
+        )
+        return jsonify(status="error", message="internal server error"), 500
 
     return app
 

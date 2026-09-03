@@ -15,3 +15,15 @@ spec:
           for: 10m
           labels: { severity: warning }
           annotations: { summary: "Platform API p95 latency exceeds 500ms" }
+    - name: platform-backups
+      rules:
+        - alert: VeleroBackupFailed
+          expr: increase(velero_backup_failure_total[1h]) > 0
+          for: 5m
+          labels: { severity: warning }
+          annotations: { summary: "A Velero backup failed during the last hour" }
+        - alert: VeleroScheduledBackupStale
+          expr: time() - max(velero_backup_last_successful_timestamp{schedule="platform-daily"}) > 93600
+          for: 15m
+          labels: { severity: warning }
+          annotations: { summary: "The daily platform backup is more than 26 hours old" }
