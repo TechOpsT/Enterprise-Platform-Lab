@@ -8,7 +8,7 @@ LOKI_CHART_VERSION := 18.11.7
 ALLOY_CHART_VERSION := 1.12.1
 KYVERNO_CHART_VERSION := 3.7.0
 VELERO_CHART_VERSION := 12.1.0
-ARGOCD_CHART_VERSION := 8.5.8
+ARGOCD_CHART_VERSION := 10.4.0
 
 .PHONY: cluster delete-cluster repositories ingress load-api load-web platform-secrets deploy undeploy observability observability-remove logging logging-verify logging-remove kyverno kyverno-verify kyverno-remove backup-store velero velero-verify velero-remove argocd applications bootstrap verify teardown test lint status
 
