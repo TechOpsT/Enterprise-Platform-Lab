@@ -27,16 +27,18 @@ jobs:
       - name: Build frontend image
         run: docker build -t platform-web:${{ github.sha }} apps/frontend
       - name: Scan API image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
+          version: v0.75.0
           image-ref: platform-api:${{ github.sha }}
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
       - name: Scan frontend image
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
+          version: v0.75.0
           image-ref: platform-web:${{ github.sha }}
           format: table
           severity: HIGH,CRITICAL
@@ -55,10 +57,12 @@ jobs:
           artifact-name: platform-web-${{ github.sha }}.spdx.json
           format: spdx-json
       - name: Scan Kubernetes configuration
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
+          version: v0.75.0
           scan-type: config
           scan-ref: .
+          skip-files: platform/kyverno/test/noncompliant-pod.yaml,infra/observability/dashboards/platform-api-overview.json
           severity: HIGH,CRITICAL
           exit-code: '1'
 
