@@ -36,3 +36,10 @@ def test_json_formatter_outputs_machine_readable_event():
 
     assert payload["level"] == "info"
     assert payload["event"] == "application.ready"
+
+
+def test_unknown_route_returns_404():
+    response = create_app().test_client().get("/not-a-real-route")
+
+    assert response.status_code == 404
+    assert response.json["status"] == "error"

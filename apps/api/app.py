@@ -7,6 +7,7 @@ import uuid
 from flask import Flask, jsonify, g, request
 from prometheus_client import Counter, Histogram, make_wsgi_app
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
+from werkzeug.exceptions import HTTPException
 
 REQUESTS = Counter(
     "platform_api_requests_total", "HTTP requests handled by the platform API", ["method", "endpoint", "status"]
@@ -91,6 +92,9 @@ def create_app():
 
     @app.errorhandler(Exception)
     def handle_unexpected_error(error):
+        if isinstance(error, HTTPException):
+            return jsonify(status="error", message=error.description), error.code
+
         app.logger.exception(
             "unhandled request error",
             extra={"event": "http.error", "request_id": getattr(g, "request_id", None)},
