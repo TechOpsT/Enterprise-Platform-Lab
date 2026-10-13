@@ -14,9 +14,14 @@ spec:
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports: [{ containerPort: 8080 }]
           resources: {{- toYaml .Values.frontend.resources | nindent 12 }}
-          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+          securityContext: { readOnlyRootFilesystem: true, allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+          volumeMounts:
+            - { name: nginx-tmp, mountPath: /tmp }
           livenessProbe: { httpGet: { path: /, port: 8080 }, initialDelaySeconds: 5 }
           readinessProbe: { httpGet: { path: /, port: 8080 }, initialDelaySeconds: 3 }
+      volumes:
+        - name: nginx-tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
